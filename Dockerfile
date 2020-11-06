@@ -1,6 +1,10 @@
 ARG SPARK_IMAGE=gcr.io/spark-operator/spark:v3.0.0
 FROM ${SPARK_IMAGE}
 
+#RUN apk add --no-cache tini
+
+#RUN chmod -R u+x /tmp
+
 # Set up dependencies for Google Cloud Storage access.
 #RUN rm $SPARK_HOME/jars/guava-14.0.1.jar
 ADD https://repo1.maven.org/maven2/com/google/guava/guava/23.0/guava-23.0.jar $SPARK_HOME/jars
@@ -21,4 +25,10 @@ ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-azure/2.7.3/hadoop-a
 ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aliyun/2.9.1/hadoop-aliyun-2.9.1.jar $SPARK_HOME/jars
 ADD https://repo1.maven.org/maven2/com/aliyun/oss/aliyun-sdk-oss/3.4.1/aliyun-sdk-oss-3.4.1.jar $SPARK_HOME/jars
 
-ENTRYPOINT ["/opt/entrypoint.sh"]
+ADD https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-latest-hadoop2.jar $SPARK_HOME/jars
+
+COPY entrypoint.sh /usr/bin/
+USER 185
+ENTRYPOINT ["/usr/bin/entrypoint.sh"]
+
+#ENTRYPOINT ["/opt/entrypoint.sh"]
