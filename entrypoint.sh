@@ -20,14 +20,18 @@ sasKeyMode=
 sasKeyName=
 storageAccountKeyName=
 
+enableAlibabaCloud=
+AlibabaCloudAccessKeyId=
+AlibabaCloudAccessKeySecret=
+endpoint=
+
+
 eventsDir=
 
 function usage {
   cat<< EOF
   Usage: entrypoint.sh  [OPTIONS]
-
   Options:
-
   --pvc                                                 Enable PVC
   --gcs gcloudkey                                       Enable GCS and provide the Google Cloud key
   --s3 enableIAM accessKeyName secretKeyName            Enable S3 and configure whether IAM is enabled,
@@ -35,6 +39,7 @@ function usage {
   --wasbs storageAccountName containerName sasKeyMode \ Enable WASBS and configure its params.
           sasKeyName(or storageAccountKeyName)          If sasKeyMode=true - provide sasKeyName as last arg,
                                                         else provide storageAccountKeyName as last arg
+  --alibaba accessKeyId accessKeySecret endpoint        Enable Alibaba Cloud OSS and configure its params
   --events-dir events-dir                               Set events dir
   -h | --help                                           Prints this message.
 EOF
@@ -81,7 +86,7 @@ function parse_args {
         storageAccountName=$2
         containerName=$3
         sasKeyMode=$4
-        if [ "$sasKeyMode" == "true" ]; then
+        if [ "$sasKeyMode" == "true" ];
           sasKeyName=$5
         else
           storageAccountKeyName=$5
@@ -90,6 +95,20 @@ function parse_args {
         continue
       else
         printf '"--wasbs" require four non-empty option arguments.\n'
+        usage
+        exit 1
+      fi
+      ;;
+      --alibaba)
+      if [[ -n "$6" ]]; then
+        enableAlibabaCloud=true
+        accessKeyId=$2
+        accessKeySecret=$3
+        endpoint=$4
+        shift 4
+        continue
+      else
+        printf '"--alibaba" require four non-empty option arguments.\n'
         usage
         exit 1
       fi
@@ -179,6 +198,13 @@ elif [ "$enableWASBS" == "true" ]; then
     export SPARK_HISTORY_OPTS="$SPARK_HISTORY_OPTS \
       -Dspark.hadoop.fs.azure.account.key.$storageAccountName.blob.core.windows.net=$(cat /etc/secrets/${storageAccountKeyName})";
   fi;
+elif ["$enableAlibabaCloud" == "true" ];then
+  export SPARK_HISTORY_OPTS="$SPARK_HISTORY_OPTS \
+    -Dspark.history.fs.logDirectory=$eventsDir \
+    -Dspark.hadoop.fs.oss.endpoint=$endpoint \
+    -Dspark.hadoop.fs.oss.accessKeySecret=$(cat /etc/secrets/${AlibabaCloudAccessKeyId}) \
+    -Dspark.hadoop.fs.oss.accessKeyId=$(cat /etc/secrets/${AlibabaCloudAccessKeySecret}) \
+    -Dspark.hadoop.fs.oss.impl=org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem";
 else
     export SPARK_HISTORY_OPTS="$SPARK_HISTORY_OPTS \
     -Dspark.history.fs.logDirectory=$eventsDir";
