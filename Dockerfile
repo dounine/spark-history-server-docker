@@ -24,7 +24,7 @@ ADD https://repo1.maven.org/maven2/com/google/guava/guava/23.0/guava-23.0.jar $S
 # Add dependency for alibaba cloud
 #ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aliyun/2.9.1/hadoop-aliyun-2.9.1.jar $SPARK_HOME/jars
 COPY lib/hadoop-aliyun-2.7.3.2.6.1.0-129.jar $SPARK_HOME/jars
-ADD https://repo1.maven.org/maven2/org/jdom/jdom/2.0.2/jdom-2.0.2.jar $SPARK_HOME/jars
+ADD https://repo1.maven.org/maven2/org/jdom/jdom/1.1.3/jdom-1.1.3.jar $SPARK_HOME/jars
 ADD https://repo1.maven.org/maven2/com/aliyun/oss/aliyun-sdk-oss/3.4.1/aliyun-sdk-oss-3.4.1.jar $SPARK_HOME/jars
 
 COPY entrypoint.sh /usr/bin/
